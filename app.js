@@ -1,12 +1,14 @@
 var express = require('express'),
 bodyParser = require('body-parser'),
-mongoose = require('mongoose')
+mongoose = require('mongoose'),
+methodOverride = require('method-override')
 app = express()
 
 mongoose.connect('mongodb://localhost/blog')
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({extended: true}))
+app.use(methodOverride('_method'))
 
 var blogSchema = new mongoose.Schema({
   title: String,
@@ -61,6 +63,28 @@ app.get('/blogs/:id', function(req,res){
       res.redirect('/blogs')
     }else{
       res.render('show', {blog: blog})
+    }
+  })
+})
+
+//EDIT ROUTE
+app.get('/blogs/:id/edit',function(req,res){
+  Blog.findById(req.params.id, function(err,blog) {
+    if (err) {
+      res.redirect('/blogs')
+    } else {
+      res.render('edit', {blog: blog})
+    }
+  })
+})
+
+//UPDATE ROUTE
+app.put('/blogs/:id', function(req,res){
+  Blog.findByIdAndUpdate(req.params.id,req.body.blog,function(err,updatedBlog){
+    if (err) {
+      res.redirect('/blogs')
+    } else {
+      res.redirect('/blogs/'+req.params.id)
     }
   })
 })
